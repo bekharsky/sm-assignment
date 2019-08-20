@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Supermetrics Code Assignment</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css"
+    />
+  </head>
+
+  <body>
+    <section class="section">
+      <div class="container">
+        <header class="columns">
+          <div class="column">
+            <h1 class="title">
+              Supermetrics Code Assignment
+            </h1>
+
+            <p class="subtitle">Sergey Bekharsky</p>
+          </div>
+        </header>
+
+        <form method="GET" class="sm-form columns">
+          <div class="column">
+            <div class="select is-fullwidth">
+              <select name="month" required>
+                <option value="" disabled selected>Select month</option>
+
+                <% if (months.length > 0) for (let month of months) { %>
+                <option value="<%= month %>">
+                  <%= monthNames[month] %>
+                </option>
+                <% } %>
+              </select>
+            </div>
+          </div>
+
+          <div class="column">
+            <button
+              type="submit"
+              class="sm-trg sm-trg--monthly button is-primary is-fullwidth"
+            >
+              Fetch by month
+            </button>
+          </div>
+
+          <div class="column">
+            <button
+              type="button"
+              class="sm-trg sm-trg--year button is-info is-fullwidth"
+            >
+              Fetch weeks
+            </button>
+          </div>
+        </form>
+
+        <main class="columns">
+          <div class="sm-stats sm-stats--monthly is-hidden column">
+            <div class="table-container">
+              <table class="table is-fullwidth">
+                <thead>
+                  <th>Metric / month</th>
+                  <th>Value</th>
+                </thead>
+
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="sm-stats sm-stats--year is-hidden column">
+            <div class="table-container">
+              <table class="table is-fullwidth">
+                <thead>
+                  <th>Week</th>
+                  <th>Posts</th>
+                </thead>
+
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </section>
+  </body>
+
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    (function(window, document, undefined) {
+      /**
+       * Some fetch steroids
+       */
+      const status = response => {
+        if (response.status >= 200 && response.status < 300) {
+          return Promise.resolve(response);
+        } else {
+          return Promise.reject(new Error(response.statusText));
+        }
+      };
+
+      const json = response => {
+        return response.json();
+      };
+
+      /**
+       * Default fetch is not smart enough
+       */
+      const fetchJSON = endpoint => {
+        return fetch(endpoint)
+          .then(status)
+          .then(json)
+          .catch(e => {
+            console.log(e);
+            alert('Data fetching goes all way wrong');
+          });
+      };
+
+      /**
+       * Fetch statistics by a given month
+       */
+      const targets = document.querySelectorAll('.sm-stats');
+
+      const form = document.querySelector('.sm-form');
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+
+        const endpoint = `/stats/monthly?month=${form.elements['month'].value}`;
+
+        fetchJSON(endpoint).then(data => {
+          const target = document.querySelector('.sm-stats--monthly');
+          const table = target.querySelector('tbody');
+
+          const metrics = data.metrics || [];
+
+          // Build table rows
+          const template = metrics
+            .map(
+              row => `<tr>
+              <td>${row.label}</td>
+              <td>${row.value}</td>
+            </tr>`
+            )
+            .join('');
+
+          targets.forEach(target => target.classList.add('is-hidden'));
+          target.classList.remove('is-hidden');
+          table.innerHTML = template;
+        });
+
+        return false;
+      });
+
+      /**
+       * Fetch weekly statistics
+       */
+      const yearTrg = document.querySelector('.sm-trg--year');
+      yearTrg.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const endpoint = '/stats/year';
+
+        fetchJSON(endpoint).then(data => {
+          const target = document.querySelector('.sm-stats--year');
+          const table = target.querySelector('tbody');
+
+          // Build table rows
+          const template = data
+            .map(
+              row => `<tr>
+                <td>${row.week}</td>
+                <td>${row.totalPosts}</td>
+              </tr>`
+            )
+            .join('');
+
+          targets.forEach(target => target.classList.add('is-hidden'));
+          target.classList.remove('is-hidden');
+          table.innerHTML = template;
+        });
+
+        return false;
+      });
+    })(window, document);
+  </script>
+</html>
