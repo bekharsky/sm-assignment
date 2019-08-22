@@ -3,7 +3,7 @@
  * @module getAverage
  * @param  {Array} arr An array to get average from
  * @type {function}
- * @returns {number}
+ * @returns {number|boolean} Returns boolean false if it's an empty array
  */
 const getAverage = arr => {
   if (!arr.length) {
