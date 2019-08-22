@@ -6,6 +6,10 @@
  * @returns {number}
  */
 const getAverage = arr => {
+  if (!arr.length) {
+    return false;
+  }
+
   return arr.reduce((sum, item) => sum + item, 0) / arr.length;
 };
 

@@ -10,7 +10,7 @@ const { groupBy, getAverage } = require('../../utils');
 const avgPostsPerUser = posts => {
   const users = groupBy(posts, 'from_id');
   const counts = Object.keys(users).map(key => users[key].length);
-  return getAverage(counts);
+  return getAverage(counts) || 0;
 };
 
 module.exports = avgPostsPerUser;

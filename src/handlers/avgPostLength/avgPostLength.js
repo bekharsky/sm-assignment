@@ -9,7 +9,7 @@ const { getAverage } = require('../../utils');
  */
 const avgPostLength = posts => {
   const counts = posts.map(post => post.message.length);
-  return getAverage(counts);
+  return getAverage(counts) || 0;
 };
 
 module.exports = avgPostLength;
